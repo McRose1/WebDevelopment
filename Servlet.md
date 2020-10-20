@@ -5,7 +5,11 @@ Servlet 为创建基于 web 的应用程序提供了基于组件、独立于平�
 
 Servlet 有权限访问所有的 Java API，包括访问企业级数据库的 JDBC API
 
-## B/S：浏览器/服务器
+## B/S：浏览器/服务器(Browser/Server)
+
+### B/S vs. C/S(Client/Server)
+
+
 
 ## Tomcat 和 Servlet 的关系
 Tomcat 是 Web 应用服务器，是一个 Servlet/JSP 容器。Tomcat 作为 Servlet 容器，负责处理客户请求，把请求送给 Servlet，并将 Servlet 的响应传送给客户。
@@ -26,10 +30,47 @@ Java Servlet API 是 Servlet 容器（Tomcat）和 Servlet 之间的接口，它
  注意：Web3.0开始用 @WebServlet("/search") 代替以前的 web.xml中的 servlet 的 <servlet-mapping> 元素中 servlet 的配置
 
 ## Servlet 的生命周期
-服务器启动时或者第一次请求该servlet时，就会初始化一个 Servlet 对象，最后服务器关闭时，才会销毁这个 Servlet 对象，执行 destory() 方法
+1. Servlet 通过调用 init() 方法进行初始化
+2. Servlet 调用 service() 方法来处理客户端的请求
+3. Servlet 通过调用 destroy() 方法终止
+4. 最后，Servlet 是由 JVM 的垃圾回收器进行垃圾回收的
 
-## Servlet 表单数据
-### GET 方法
+服务器启动时或者第一次请求该servlet时，就会初始化(init)一个 Servlet 对象，最后服务器关闭时，才会销毁这个 Servlet 对象，执行 destory() 方法
+
+### init()
+init 方法被设计成**只调用一次**。它在**第一次创建 Servlet 时被调用**，在后续每次用户请求时不再调用。因此，它适用于一次性初始化，就像 Applet 的 init 方法一样。
+
+Servlet 创建于用户第一次调用对应于该 Servlet 的 URL 时，但是我们也可以指定 Servlet 在服务器第一次启动时被加载。
+
+当用户调用一个 Servlet 时，就会创建一个 Servlet 实例，每一个用户请求都会产生一个新的线程，适当的时候移交给 doGet 或 doPost 方法。
+
+init() 方法简单的创建或加载一些数据，这些数据将被用于 Servlet 的整个生命周期。
+
+```java
+public void init() throws ServletException {
+ // 初始化代码...
+}
+```
+
+### service()
+service() 方法是执行实际任务的主要方法。
+
+Servlet 容器（即 Web 服务器）调用 service() 方法来处理来自客户端（浏览器）的请求，并把格式化的响应写回给客户端。
+
+每次服务器接收到一个 Servlet 请求时，服务器会产生一个新的线程并调用服务。
+
+service() 方法检查 HTTP 请求类型（GET、POST、PUT、DELETE 等），并在适当的时候调用 doGet、doPost、doDelete 等方法。
+
+```java
+public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+}
+```
+
+service() 方法由容器调用，service 方法在适当的时候调用 doGet、doPost、doPut、doDelete 等方法。
+
+所以，我们不用对 service() 方法做任何动作，我们只需要根据来自客户端的请求类型来重写 doGet() 或 doPost() 即可。
+
+#### GET & doGet()
 GET 方法向页面请求发送已编码的用户信息。页面和已编码的信息中间用？字符分隔：
 
 `http://www.test.com/hello?key1=value1&key2=value2`
@@ -40,12 +81,53 @@ GET 方法是默认的从浏览器向 Web服务器传递信息的方法，它会
 
 GET 方法有大小限制：请求字符串中最多只能有 1024 个字符。
 
-### POST 方法
+---
+
+GET 请求来自于一个 URL 的正常请求，或者来自于一个未知的 METHOD 的 HTML 表单，它由 doGet() 方法处理。
+
+```java
+public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+ \\ Servlet 代码
+}
+```
+
+#### POST & doPost()
 POST 方法打包信息的方式与 GET 方法基本相同，但是 POST 方法不是把信息作为 URL 中？字符后的文本字符串进行发送，而是把这些信息作为一个单独的消息。
 
 消息以标准输出的形式传到后台程序，我们可以解析和使用这些标准输出。
 
 - getParameter()：调用 request.getParameter() 方法来获取表单参数的值
+
+---
+
+POST 请求来自于一个特别指定了 METHOD 为 POST 的 HTML 表单，它由 doPost() 方法处理。
+
+```java
+public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+ \\ Servlet 代码
+}
+```
+
+### destroy() 
+destroy() 方法**只会被调用一次，在 Servlet 生命周期结束时被调用**。
+
+destroy() 方法可以让我们的 Servlet 关闭数据库连接、停止后台线程、把 cookie 列表或点击计数器写入到磁盘，并执行其他类似的清理活动。
+
+在调用 destroy() 方法之后，servlet 对象被标记为垃圾回收。
+
+```java
+public void destroy() {
+ // 终止化代码...
+}
+```
+
+## 架构图
+1. 第一个到达服务器的 HTTP 请求被委派到 Servlet 容器
+2. Servlet 容器在调用 service() 方法之前加载 Servlet
+3. 然后 Servlet 容器处理由多个线程产生的多个请求，每个线程执行一个单一的 Servlet 实例的 service() 方法
+
+![Servlet](/images/Servlet.png)
+
 
 ### Servlet 读取 HTTP request header 的方法
 通过 HttpServletRequest 对象：
