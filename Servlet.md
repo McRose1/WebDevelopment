@@ -128,6 +128,7 @@ public void destroy() {
 
 ![Servlet](/images/Servlet.png)
 
+---
 
 ### Servlet 读取 HTTP request header 的方法
 通过 HttpServletRequest 对象：
