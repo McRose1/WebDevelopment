@@ -30,7 +30,7 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 
 ### 注解（annotation）
 |属性|类型|说明|
-|---|----|——--|
+|---|----|----|
 |filterName|String|指定过滤器的name属性，等价于<filter-name>|
 |value|String[]|该属性等价于urlPatterns属性，但是两者不应该同时使用|
 |urlPatterns|String[]|指定一组过滤器的URL匹配模式。等价于<url-pattern>标签|
